@@ -2,6 +2,9 @@
 
 #include "TankPlayerController.h"
 #include "../Public/TankPlayerController.h"
+#include "GameFramework/Actor.h"
+#include "Engine/World.h"
+#include "GameFramework/PlayerController.h"
 
 
 void ATankPlayerController::BeginPlay()
@@ -29,7 +32,30 @@ ATank* ATankPlayerController::GetControlledTank() const {
 
 void ATankPlayerController::AimTowardsCrosshair() {
 	if (!GetControlledTank()) { return; }
-	//get world location through crosshair
-	//if it hits landscape
-		//tell tank to aim at crosshair
+
+	FVector HitLocation; // Out Paramater
+	if (GetSightRayHitLocation(HitLocation))
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("HitLocation: %s"), *HitLocation.ToString());
+
+		
+			//TODO tell tank to aim at crosshair
+	}
 }
+
+//get world location through crosshair //true if it hits landscape
+bool ATankPlayerController::GetSightRayHitLocation(FVector& OutHitLocation) const
+{
+	// find crosshair position
+	int32 ViewportSizeX, ViewportSizeY;
+	GetViewportSize(ViewportSizeX, ViewportSizeY);
+
+	auto ScreenLocation = FVector2D(ViewportSizeX * CrossHairXLocation, ViewportSizeY * CrossHairYLocation);
+
+	//deproject the screen position to world direction
+
+	//line trace along look direction and see what is hit (up to max range)
+
+	return true;
+}
+

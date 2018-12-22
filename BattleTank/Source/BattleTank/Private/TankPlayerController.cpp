@@ -36,7 +36,7 @@ void ATankPlayerController::AimTowardsCrosshair() {
 	FVector HitLocation; // Out Paramater
 	if (GetSightRayHitLocation(HitLocation))
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("HitLocation: %s"), *HitLocation.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("HitLocation: %s"), *HitLocation.ToString());
 
 		
 			//TODO tell tank to aim at crosshair
@@ -44,7 +44,7 @@ void ATankPlayerController::AimTowardsCrosshair() {
 }
 
 //get world location through crosshair //true if it hits landscape
-bool ATankPlayerController::GetSightRayHitLocation(FVector& OutHitLocation) const
+bool ATankPlayerController::GetSightRayHitLocation(FVector& HitLocation) const
 {
 	// find crosshair position
 	int32 ViewportSizeX, ViewportSizeY;
@@ -53,9 +53,37 @@ bool ATankPlayerController::GetSightRayHitLocation(FVector& OutHitLocation) cons
 	auto ScreenLocation = FVector2D(ViewportSizeX * CrossHairXLocation, ViewportSizeY * CrossHairYLocation);
 
 	//deproject the screen position to world direction
-
+	FVector LookDirection, WorldLocation;
+	if (GetLookDirection(ScreenLocation, LookDirection, WorldLocation)) {
 	//line trace along look direction and see what is hit (up to max range)
+		(GetLookVectorHitLocation(LookDirection, WorldLocation, HitLocation));
+			}
+	else { return false; }
 
 	return true;
+}
+
+bool ATankPlayerController::GetLookDirection(FVector2D ScreenLocation, FVector& LookDirection, FVector& WorldLocation) const
+{
+	return DeprojectScreenPositionToWorld(ScreenLocation.X, ScreenLocation.Y, WorldLocation, LookDirection);
+}
+
+bool ATankPlayerController::GetLookVectorHitLocation(FVector LookDirection, FVector WorldLocation, FVector& HitLocation) const
+{
+	FHitResult Target;
+	auto StartLocation = WorldLocation;
+	auto EndLocation = StartLocation + (LookDirection*LineTraceRange);
+	if (GetWorld()->LineTraceSingleByChannel(
+			Target,
+			StartLocation,
+			EndLocation,
+			ECollisionChannel::ECC_Visibility))
+	{		
+			HitLocation = Target.Location;
+			return true; 
+	}
+	else {
+		HitLocation = FVector(0);
+		return false; }
 }
 
